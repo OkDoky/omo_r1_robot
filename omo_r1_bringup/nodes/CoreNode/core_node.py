@@ -46,7 +46,7 @@ class CoreNode():
         roslaunch.configure_logging(self.launch_uuid)
         
         ## [Mode] create Mode Context for main mode
-        self.mode_context = ModeContext(default_mode_state)
+        self.mode_context = ModeContext(default_mode_state, self.launch_uuid, self.mode_dir)
         
         ## [Mode] create device launch for essential node for control robot
         self.device_launch = roslaunch.parent.ROSLaunchParent(self.launch_uuid,[self.mode_dir['device']])
@@ -59,7 +59,7 @@ class CoreNode():
         self.srvs.append(rospy.Service("~mode_change", str_srv, self.mode_change_cb))
         
         ## [Mode] init default mode launch
-        self.current_launch = self.init_default_mode_launch(default_mode)
+        # self.current_launch = self.init_default_mode_launch(default_mode) ####$$
         
         ## [Bridge] init bridge params
         self.bridge_dir = rospy.get_param("~BridgeHandler/bridge_dir",{})
@@ -169,13 +169,13 @@ class CoreNode():
                 if not req.req == self.get_state_name():
                     rospy.logwarn("[CoreNode] mode change %s -> %s"%(self.get_state_name(), req.req))
                     self.mode_context.request_switch()
-                    self.shutdown_and_launch()
+                    # self.shutdown_and_launch() ####$$
                 else:
                     rospy.logwarn("[CoreNode] maintain current mode %s"%self.get_state_name())
             elif req.req == 'reset':
                 rospy.logwarn("[CoreNode] reset mode, current mode is %s"%self.get_state_name())
                 self.mode_context.request_reset()
-                self.shutdown_and_launch()
+                # self.shutdown_and_launch() ####$$
             else:
                 rospy.logwarn("[CoreNode] Wrong mode received")
                 res.code = 2
@@ -188,42 +188,42 @@ class CoreNode():
             res.code = 1
             return res
         
-    def shutdown_and_launch(self):
-        """
-        shutdown current launch file and relaunch the commanded mode launch
-        """
-        launch = self.current_launch
-        try:
-            launch.shutdown()
-            launch = roslaunch.parent.ROSLaunchParent(self.launch_uuid, [self.mode_dir['%s'%self.get_state_name()]])
-            launch.start()
-            self.current_launch = launch
-            rospy.loginfo('[CoreNode] success to launch %s mode'%self.get_state_name())
-            return
-        except Exception as e:
-            rospy.logerr('[CoreNode] failed to launch %s mode, %s'%(self.get_state_name(),traceback.format_exc()))
+    # def shutdown_and_launch(self):
+    #     """
+    #     shutdown current launch file and relaunch the commanded mode launch
+    #     """
+    #     launch = self.current_launch
+    #     try:
+    #         launch.shutdown()
+    #         launch = roslaunch.parent.ROSLaunchParent(self.launch_uuid, [self.mode_dir['%s'%self.get_state_name()]])
+    #         launch.start()
+    #         self.current_launch = launch
+    #         rospy.loginfo('[CoreNode] success to launch %s mode'%self.get_state_name())
+    #         return
+    #     except Exception as e:
+    #         rospy.logerr('[CoreNode] failed to launch %s mode, %s'%(self.get_state_name(),traceback.format_exc()))
             
-    def init_default_mode_launch(self, run_mode):
-        """
-        only run at first interface class is initialized
-        launch default node(when robot boot)
+    # def init_default_mode_launch(self, run_mode):
+    #     """
+    #     only run at first interface class is initialized
+    #     launch default node(when robot boot)
 
-        Args:
-            run_mode (string): default mode for run
+    #     Args:
+    #         run_mode (string): default mode for run
 
-        Returns:
-            roslaunch object:  to use when mode change, stop this launch and
-            relaunch other launch object
-        """
-        launch = None
-        try:
-            launch = roslaunch.parent.ROSLaunchParent(self.launch_uuid, [self.mode_dir['%s'%run_mode]])
-            launch.start()
-            rospy.loginfo("[CoreNode] default mode launched, %s"%run_mode)
-        except Exception as e:
-            rospy.logerr("[CoreNode] cannot launch default mode, %s"%traceback.format_exc())
-        finally:
-            return launch
+    #     Returns:
+    #         roslaunch object:  to use when mode change, stop this launch and
+    #         relaunch other launch object
+    #     """
+    #     launch = None
+    #     try:
+    #         launch = roslaunch.parent.ROSLaunchParent(self.launch_uuid, [self.mode_dir['%s'%run_mode]])
+    #         launch.start()
+    #         rospy.loginfo("[CoreNode] default mode launched, %s"%run_mode)
+    #     except Exception as e:
+    #         rospy.logerr("[CoreNode] cannot launch default mode, %s"%traceback.format_exc())
+    #     finally:
+    #         return launch
 
 if __name__=="__main__":
     ## init class

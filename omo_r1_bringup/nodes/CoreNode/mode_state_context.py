@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 from abc import ABCMeta, abstractmethod
+import roslaunch
 
 class ModeContext:
     """
@@ -10,13 +11,16 @@ class ModeContext:
     """
     
     _mode_state = None
+    _launch = None
     """
     A reference to the current state of the Context
     """
     
-    def __init__(self, state):
+    def __init__(self, state, uuid, dir):
+        self.uuid = uuid
+        self.launch_dir = dir
         self.transition_to(state)
-        
+
     def transition_to(self, state):
         """
         The ModeContext allows changing the State object at runtime
@@ -27,6 +31,11 @@ class ModeContext:
         print("[ModeContext] Transition to %s"%state.get_state_name())
         self._mode_state = state
         self._mode_state.context = self
+
+        if not self._launch == None:
+            self._launch.shutdown()
+        self._launch = roslaunch.parents.ROSLaunchParent(self.uuid,[self.launch_dir['%s'%self.request_current_state_name]])
+        self._launch.start()
         
         """
         The ModeContext delegates part of its behavior to the current State object.
