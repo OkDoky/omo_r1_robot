@@ -230,6 +230,11 @@ class OMOR1MotorNode:
       baud_rate = rospy.get_param('~baud', 115200)
       self.odom_mode = rospy.get_param("~odom_mode", "wheel_only")
       self.port_handler = PortHandler(port_name, baud_rate)
+
+      # set frame id
+      rid = rospy.get_param('~tf_prefix','r1')
+      self.parent_frame_id = "%s/odom"%rid
+      self.child_frame_id = "%s/base_footprint"%rid
       
       # Set packet handler
       self.packet_write_handler = PacketWriteHandler(self.port_handler)
@@ -382,16 +387,13 @@ class OMOR1MotorNode:
       self.odom_vel.y = 0.0
       self.odom_vel.w = d_theta / d_time
 
-      parent_frame_id = "odom"
-      child_frame_id = "base_footprint"
-
       odom_orientation_quat = quaternion_from_euler(0, 0, self.odom_pose.theta)
-      self.odom_broadcaster.sendTransform((self.odom_pose.x, self.odom_pose.y, 0.), odom_orientation_quat, timestamp_now, child_frame_id, parent_frame_id)
+      self.odom_broadcaster.sendTransform((self.odom_pose.x, self.odom_pose.y, 0.), odom_orientation_quat, timestamp_now, self.child_frame_id, self.parent_frame_id)
       
       odom = Odometry()
       odom.header.stamp = timestamp_now
-      odom.header.frame_id = parent_frame_id
-      odom.child_frame_id = child_frame_id
+      odom.header.frame_id = self.parent_frame_id
+      odom.child_frame_id = self.child_frame_id
       odom.pose.pose = Pose(Point(self.odom_pose.x, self.odom_pose.y, 0.), Quaternion(*odom_orientation_quat))
       odom.twist.twist = Twist(Vector3(self.odom_vel.x, self.odom_vel.y, 0), Vector3(0, 0, self.odom_vel.w))
       
@@ -428,16 +430,13 @@ class OMOR1MotorNode:
       self.odom_vel.y = 0.0
       self.odom_vel.w = d_theta / d_time
 
-      parent_frame_id = "odom"
-      child_frame_id = "base_footprint"
-
       odom_orientation_quat = quaternion_from_euler(0, 0, self.odom_pose.theta)
-      self.odom_broadcaster.sendTransform((self.odom_pose.x, self.odom_pose.y, 0.), odom_orientation_quat, timestamp_now, child_frame_id, parent_frame_id)
+      self.odom_broadcaster.sendTransform((self.odom_pose.x, self.odom_pose.y, 0.), odom_orientation_quat, timestamp_now, self.child_frame_id, self.parent_frame_id)
       
       odom = Odometry()
       odom.header.stamp = timestamp_now
-      odom.header.frame_id = parent_frame_id
-      odom.child_frame_id = child_frame_id
+      odom.header.frame_id = self.parent_frame_id
+      odom.child_frame_id = self.child_frame_id
       odom.pose.pose = Pose(Point(self.odom_pose.x, self.odom_pose.y, 0.), Quaternion(*odom_orientation_quat))
       odom.twist.twist = Twist(Vector3(self.odom_vel.x, self.odom_vel.y, 0), Vector3(0, 0, self.odom_vel.w))
       
