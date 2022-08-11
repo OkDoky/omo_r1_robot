@@ -1,0 +1,15 @@
+<launch>
+    <!-- multimaster values -->
+    <arg name="rid" value="[$(env ROS_HOSTNAME)]"/>
+
+    <!-- for launch multimaster -->
+    <node pkg="master_discovery_fkie" type="master_discovery" name="master_discovery">
+        <param name="mcast_group" value="224.0.0.1"/>
+        <param name="send_mcast" value="False"/>
+        <rosparam param="robot_hosts" subst_value="True">$(arg rid)</rosparam>
+        <param name="listen_mcast" value="False"/>
+    </node>
+    <node pkg="master_sync_fkie" type="master_sync" name="master_sync">
+        <rosparam param="ignore_topics">['/rosout','rosout_agg']</rosparam>
+    </node>
+</launch>

@@ -1,0 +1,3 @@
+<launch>
+    <print "hello"/>
+</launch>
