@@ -1,0 +1,80 @@
+<launch>
+    <!-- Setting for Arguments -->
+    <arg name="rid" default="r1"/>
+    <arg name="set_lidar_frame_id" default="$(arg rid)/base_scan"/>
+    <arg name="set_port_lidar" default="/dev/ttyLiDAR"/>
+    <arg name="set_port_motor" default="/dev/ttyMotor"/>
+    <arg name="set_port_imu" default="/dev/ttyIMU"/>
+    <arg name="use_imu" default="false"/>
+    <arg name="start_mode" default="nav"/>
+    <arg name="use_last_pose" default="true"/>
+    <arg name="map_file_dir" default="/root/robot_db/map/map.yaml"/>
+    <arg name="local_planner_type" default="dwa"/>
+    <arg name="use_core_module" default="false"/>
+    <arg name="use_ros_bridge" default="false"/>
+    
+    <group ns="$(arg rid)">
+        <!-- launch ros bridge if you want -->
+        <group if="$(arg use_ros_bridge)">
+            <include file="$(find omo_r1_bringup)/launch/rosbridge_websocket.launch.xml">
+                <arg name="unregister_timeout" value="10000"/>
+            </include>
+        </group>
+        <group unless="$(arg use_ros_bridge)">
+            <node pkg="fkie_master_discovery" type="master_discovery" name="master_discovery">
+                <param name="mcast_group" value="224.0.0.1"/>
+                <param name="send_mcast" value="True"/>
+                <param name="listen_mcast" value="True"/>
+                <rosparam param="static_hosts">[cai-server]</rosparam>
+            </node>
+        </group>
+            
+
+        <!-- launch device drivers -->
+        <include file="$(find omo_r1_bringup)/launch/omo_r1_motor.launch">
+            <arg name="set_port" value="$(arg set_port_motor)"/>
+            <arg name="tf_prefix" value="$(arg rid)"/>
+        </include>
+
+        <include file="$(find omo_r1_bringup)/launch/omo_r1_lidar.launch">
+            <arg name="set_frame_id" value="$(arg set_lidar_frame_id)"/>
+            <arg name="set_port" value="$(arg set_port_lidar)"/>
+        </include>
+
+        <group if="$(arg use_imu)">
+            <include file="$(find omo_r1_bringup)/launch/omo_r1_imu.launch">
+                <arg name="set_port" value="$(arg set_port_imu)"/>
+            </include>
+        </group>
+
+
+        <group if="$(arg use_core_module)">
+            <node pkg="omo_r1_bringup" name="core_module" type="core_module" output="screen"/>
+        </group>
+        <group unless="$(arg use_core_module)">
+            <!-- load description -->
+            <include file="$(find omo_r1_description)/launch/model_view.launch">
+                <arg name="rid" value="$(arg rid)"/>
+            </include>
+
+            <!-- launch map and localization process -->
+            <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file_dir)"/>
+            <include file="$(find omo_r1_navigation)/launch/amcl.launch">
+               <rosparam file="/root/robot_db/last_pose.yaml" command="load"/>
+               <param name="tf_prefix" default="$(arg rid)"/>
+            </include>
+
+            <!-- launch move base for navigation -->    
+            <include file="$(find omo_r1_navigation)/launch/move_base.launch"/>
+        </group>
+        <!-- add laser filters -->
+        <include file="$(find laser_filters)/launch/laser_filter.launch.xml"/>
+
+        <!-- scan to point cloud node -->
+        <include file="$(find laser_geometry)/launch/scan_to_pcl.launch.xml"/>
+
+        <!-- obstacle detector node -->
+        <include file="$(find obstacle_detector)/launch/obstacle_detector.launch.xml"/>
+    </group>
+</launch>
+
