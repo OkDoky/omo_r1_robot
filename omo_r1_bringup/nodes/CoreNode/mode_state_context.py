@@ -31,15 +31,17 @@ class ModeContext:
         print("[ModeContext] Transition to %s"%state.get_state_name())
         self._mode_state = state
         self._mode_state.context = self
-
-        if not self._launch == None:
-            self._launch.shutdown()
-        self._launch = roslaunch.parents.ROSLaunchParent(self.uuid,[self.launch_dir['%s'%self.request_current_state_name]])
-        self._launch.start()
+        self.launch_module()
         
         """
         The ModeContext delegates part of its behavior to the current State object.
         """
+        
+    def launch_module(self):
+        if not self._launch == None:
+            self._launch.shutdown()
+        self._launch = roslaunch.parent.ROSLaunchParent(self.uuid,[self.launch_dir['%s'%self.request_current_state_name()]])
+        self._launch.start()
         
     def request_reset(self):
         self._mode_state.reset_current_mode()
@@ -89,7 +91,7 @@ class ConcreteStateNav(State):
     def transition_switch(self):
         self.context.transition_to(ConcreteStateSlam())
     def reset_current_mode(self):
-        pass
+        self.context.launch_module()
     
 class ConcreteStateSlam(State):
     def get_state_name(self):
@@ -97,4 +99,4 @@ class ConcreteStateSlam(State):
     def transition_switch(self):
         self.context.transition_to(ConcreteStateNav())
     def reset_current_mode(self):
-        pass
+        self.context.launch_module()
