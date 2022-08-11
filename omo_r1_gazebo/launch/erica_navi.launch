@@ -1,0 +1,61 @@
+<launch>
+
+  <!-- options for using simulation -->
+  <arg name="use_gazebo_gui" default="false"/>
+  <arg name="use_rviz" default="true"/>
+  <arg name="use_last_pose" default="true"/>
+
+  <!-- initial pose -->
+  <arg name="x_pos" default="-10.0"/>
+  <arg name="y_pos" default="-1.5"/>
+  <arg name="z_pos" default="0.0"/>
+
+  <!-- etc. args -->
+  <arg name="map_file" default="$(find omo_r1_navigation)/maps/gazebo_map/map.yaml"/>
+  <arg name="local_planner_type" default="dwa"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find omo_r1_gazebo)/worlds/erica.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="$(arg use_gazebo_gui)"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find omo_r1_gazebo)/sdf/omo_r1.gazebo.xacro" />
+
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model omo_r1_sim -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
+  
+  <group if="$(arg use_rviz)">
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find omo_r1_navigation)/rviz/omo_r1_navigation.rviz"/>
+  </group>
+
+  <!-- robot state publish & joint state publisher -->
+  <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher"/>
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+
+
+  <!-- launch map server -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+  <!-- launch amcl for localization -->
+  <include file="$(find omo_r1_navigation)/launch/amcl.launch">
+    <arg name="initial_pose_x" value="$(arg x_pos)"/>
+    <arg name="initial_pose_y" value="$(arg y_pos)"/>
+    <arg name="initial_pose_a" value="$(arg z_pos)"/>
+  </include>
+
+  <!-- launch move base for navigation -->
+  <include file="$(find omo_r1_navigation)/launch/move_base.launch"/>
+
+  <!-- laser filter node -->
+  <include file="$(find laser_filters)/launch/laser_filter.launch.xml"/>
+
+  <!-- scan to point cloud -->
+  <include file="$(find laser_geometry)/launch/scan_to_pcl.launch.xml"/>
+
+  <!-- add dynamic object tracking module -->
+  <node pkg="multi_object_tracking_lidar" type="kf_tracker" name="kf_tracker"/>
+
+</launch>
