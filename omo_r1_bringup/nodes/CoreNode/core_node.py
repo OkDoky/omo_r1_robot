@@ -51,15 +51,15 @@ class CoreNode():
         ## [Mode] create device launch for essential node for control robot
         self.device_launch = roslaunch.parent.ROSLaunchParent(self.launch_uuid,[self.mode_dir['device']])
         self.device_launch.start()
+
+        ## [MapSaver] init params
+        self.save_map_dir = rospy.get_param("~SaveMapHandler/save_map_dir",'/')
         
         ## [All] init service server
         self.srvs = []
-        # self.srvs.append(rospy.Service("~save_map_as", map_save, self.map_save_cb))
+        self.srvs.append(rospy.Service("~save_map_as", map_save, self.map_save_cb))
         self.srvs.append(rospy.Service("~brdige_mode_change", bridge_control, self.bridge_mode_change_cb))
         self.srvs.append(rospy.Service("~mode_change", str_srv, self.mode_change_cb))
-        
-        ## [Mode] init default mode launch
-        # self.current_launch = self.init_default_mode_launch(default_mode) ####$$
         
         ## [Bridge] init bridge params
         self.bridge_dir = rospy.get_param("~BridgeHandler/bridge_dir",{})
@@ -98,11 +98,17 @@ class CoreNode():
             rospy.logwarn("[CoreNode] bridge object is not defined %s"%traceback.format_exc())
         rospy.spin()
         
-    # def map_save_cb(self,req):
-    #     try:
-    #         pass
-    #     except Exception as e:
-    #         pass
+    def map_save_cb(self,req):
+        res = map_saveResponse()
+        res.success = False; res.code = 0
+        try:
+            res.success, text = save_map(req.map_name, req.mode, req.demension, self.save_map_dir)
+            rospy.logwarn("[CoreNode] succeded to save map as %s"%req.map_name)
+            if not res.success:
+                rospy.logwarn("[CoreNode] failed to save map, %s"%text)
+            return res
+        except Exception as e:
+            return res
      
     def bridge_mode_change_cb(self,req):
         res = bridge_controlResponse()
@@ -140,12 +146,6 @@ class CoreNode():
             return res
 
     def get_state_name(self):
-        """
-        call mode context func to get current mode name
-
-        Returns:
-            string: mode name
-        """
         return self.mode_context.request_current_state_name()
     
     def mode_change_cb(self,req):
@@ -169,13 +169,11 @@ class CoreNode():
                 if not req.req == self.get_state_name():
                     rospy.logwarn("[CoreNode] mode change %s -> %s"%(self.get_state_name(), req.req))
                     self.mode_context.request_switch()
-                    # self.shutdown_and_launch() ####$$
                 else:
                     rospy.logwarn("[CoreNode] maintain current mode %s"%self.get_state_name())
             elif req.req == 'reset':
                 rospy.logwarn("[CoreNode] reset mode, current mode is %s"%self.get_state_name())
                 self.mode_context.request_reset()
-                # self.shutdown_and_launch() ####$$
             else:
                 rospy.logwarn("[CoreNode] Wrong mode received")
                 res.code = 2
@@ -187,43 +185,6 @@ class CoreNode():
             rospy.logwarn("[CoreNode] mode change callback error, %s"%traceback.format_exc())
             res.code = 1
             return res
-        
-    # def shutdown_and_launch(self):
-    #     """
-    #     shutdown current launch file and relaunch the commanded mode launch
-    #     """
-    #     launch = self.current_launch
-    #     try:
-    #         launch.shutdown()
-    #         launch = roslaunch.parent.ROSLaunchParent(self.launch_uuid, [self.mode_dir['%s'%self.get_state_name()]])
-    #         launch.start()
-    #         self.current_launch = launch
-    #         rospy.loginfo('[CoreNode] success to launch %s mode'%self.get_state_name())
-    #         return
-    #     except Exception as e:
-    #         rospy.logerr('[CoreNode] failed to launch %s mode, %s'%(self.get_state_name(),traceback.format_exc()))
-            
-    # def init_default_mode_launch(self, run_mode):
-    #     """
-    #     only run at first interface class is initialized
-    #     launch default node(when robot boot)
-
-    #     Args:
-    #         run_mode (string): default mode for run
-
-    #     Returns:
-    #         roslaunch object:  to use when mode change, stop this launch and
-    #         relaunch other launch object
-    #     """
-    #     launch = None
-    #     try:
-    #         launch = roslaunch.parent.ROSLaunchParent(self.launch_uuid, [self.mode_dir['%s'%run_mode]])
-    #         launch.start()
-    #         rospy.loginfo("[CoreNode] default mode launched, %s"%run_mode)
-    #     except Exception as e:
-    #         rospy.logerr("[CoreNode] cannot launch default mode, %s"%traceback.format_exc())
-    #     finally:
-    #         return launch
 
 if __name__=="__main__":
     ## init class
