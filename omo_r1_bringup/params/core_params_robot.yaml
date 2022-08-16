@@ -1,0 +1,34 @@
+SaveMapHandler:
+  save_map_dir: '/root/robot_db/maps/'
+  error_code_dict: {
+    '0': 'success',
+    '1': 'failed to save map',
+    '2': 'connection error with map saver'
+  }
+BridgeHandler:
+  bridge_dir: {
+    mqtt: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/bridge/bridge_mqtt.launch',
+    ros_bridge: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/bridge/bridge_ros_bridge.launch',
+    multimaster: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/bridge/bridge_multimaster.launch'
+  }
+  error_code_dict: {
+    '0': 'success',
+    '1': 'failed to load launch file',
+    '2': 'failed to shutdown launch file'
+  }
+ModeHandler:
+  default_mode: 'nav'
+  ## mode list
+  # nav, slam
+  mode_dir_dict: {
+    nav: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/robot/nav.launch',
+    slam: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/robot/slam.launch',
+    device: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/robot/device.launch'
+  }
+  error_code_dict: {
+    '0': 'success',
+    '1': 'failed to load launch file',
+    '2': 'failed to shutdown launch file'
+  }
+RobotStatePublisher:
+  publish_rate: 10
