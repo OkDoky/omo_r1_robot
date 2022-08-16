@@ -1,0 +1,32 @@
+<launch>
+    <arg name="is_robot" value="true"/>
+    <arg name="is_single_mode" value="true"/>
+    <!-- robot booting mode -->
+    <group if="$(arg is_robot)">
+        <node pkg="omo_r1_bringup" type="core_node.py" name="CoreNode" ns="$(env ROS_HOSTNAME)">
+            <rosparam file="$(find omo_r1_bringup)/params/core_params_robot.yaml" command="load"/>
+            <rosparam file="/root/robot_db/params/bridge_config.yaml" command="load"/>
+        </node>
+    </group>
+    <!-- simulation mode -->
+    <group unless="$(arg is_robot)">
+        <!-- single robot simulation mode -->
+        <group if="$(arg is_single_mode)">
+            <node pkg="omo_r1_bringup" type="core_node.py" name="CoreNode" ns="r1">
+                <rosparam file="$(find omo_r1_bringup)/params/core_params_single_simul.yaml" command="load"/>
+                <rosparam file="/root/robot_db/params/bridge_config.yaml" command="load"/>
+            </node>
+        </group>
+        <!-- multi robot simulation mode -->
+        <group unless="$(arg is_single_mode)">
+            <node pkg="omo_r1_bringup" type="core_node.py" name="CoreNode" ns="r1">
+                <rosparam file="$(find omo_r1_bringup)/params/core_params_multi_simul.yaml" command="load"/>
+                <rosparam file="/root/robot_db/params/bridge_config.yaml" command="load"/>
+            </node>
+            <node pkg="omo_r1_bringup" type="core_node.py" name="CoreNode" ns="r2">
+                <rosparam file="$(find omo_r1_bringup)/params/core_params_multi_simul.yaml" command="load"/>
+                <rosparam file="/root/robot_db/params/bridge_config.yaml" command="load"/>
+            </node>
+        </group>
+    </group>
+</launch>
