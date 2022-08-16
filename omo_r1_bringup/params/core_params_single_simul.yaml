@@ -7,9 +7,9 @@ SaveMapHandler:
   }
 BridgeHandler:
   bridge_dir: {
-    mqtt: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/bridge/bridge_mqtt.launch',
-    ros_bridge: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/bridge/bridge_ros_bridge.launch',
-    multimaster: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/bridge/bridge_multimaster.launch'
+    mqtt: '/root/catkin_ws/src/omo_r1_robot/omo_r1_bringup/launch/bridge/bridge_mqtt.launch',
+    ros_bridge: '/root/catkin_ws/src/omo_r1_robot/omo_r1_bringup/launch/bridge/bridge_ros_bridge.launch',
+    multimaster: '/root/catkin_ws/src/omo_r1_robot/omo_r1_bringup/launch/bridge/bridge_multimaster.launch'
   }
   error_code_dict: {
     '0': 'success',
@@ -21,9 +21,9 @@ ModeHandler:
   ## mode list
   # nav, slam
   mode_dir_dict: {
-    nav: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/simul/nav.launch',
-    slam: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/simul/slam.launch',
-    device: '/root/catkin_ws/src/omo_r1_simul/omo_r1_bringup/launch/simul/env.launch'
+    nav: '/root/catkin_ws/src/omo_r1_robot/omo_r1_bringup/launch/simul/nav.launch',
+    slam: '/root/catkin_ws/src/omo_r1_robot/omo_r1_bringup/launch/simul/slam.launch',
+    device: '/root/catkin_ws/src/omo_r1_robot/omo_r1_bringup/launch/simul/env.launch'
   }
   error_code_dict: {
     '0': 'success',

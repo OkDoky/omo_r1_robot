@@ -12,14 +12,14 @@
     <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
   
     <!-- launch amcl for localization -->
-    <include file="$(find omo_r1_navigation)/launch/amcl.launch">
+    <include file="$(find omo_r1_navigation)/launch/simul/amcl.launch">
       <arg name="initial_pose_x" value="$(arg x_pos)"/>
       <arg name="initial_pose_y" value="$(arg y_pos)"/>
       <arg name="initial_pose_a" value="$(arg z_pos)"/>
     </include>
   
     <!-- launch move base for navigation -->
-    <include file="$(find omo_r1_navigation)/launch/move_base.launch"/>
+    <include file="$(find omo_r1_navigation)/launch/simul/move_base.launch"/>
 
     <!-- scan to point cloud -->
     <include file="$(find laser_geometry)/launch/scan_to_pcl.launch.xml"/>

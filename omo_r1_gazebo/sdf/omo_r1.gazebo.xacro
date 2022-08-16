@@ -4,6 +4,7 @@
   <xacro:arg name="laser_visual"  default="false"/>
   <xacro:arg name="camera_visual" default="false"/>
   <xacro:arg name="imu_visual"    default="false"/>
+  <xacro:arg name="rid"           default="r1"/>
 
   <gazebo reference="base_link">
     <material>Gazebo/DarkGrey</material>
@@ -61,12 +62,12 @@
 
   <gazebo>
     <plugin name="omo_r1_controller" filename="libgazebo_ros_diff_drive.so">
-      <commandTopic>cmd_vel</commandTopic>
-      <odometryTopic>odom</odometryTopic>
-      <odometryFrame>odom</odometryFrame>
+      <commandTopic>$(arg rid)/cmd_vel</commandTopic>
+      <odometryTopic>$(arg rid)/odom</odometryTopic>
+      <odometryFrame>$(arg rid)/odom</odometryFrame>
       <odometrySource>world</odometrySource>
       <publishOdomTF>true</publishOdomTF>
-      <robotBaseFrame>base_footprint</robotBaseFrame>
+      <robotBaseFrame>$(arg rid)/base_footprint</robotBaseFrame>
       <publishWheelTF>false</publishWheelTF>
       <publishTf>true</publishTf>
       <publishWheelJointState>true</publishWheelJointState>
@@ -87,8 +88,8 @@
     <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
       <alwaysOn>true</alwaysOn>
       <bodyName>imu_link</bodyName>
-      <frameName>imu_link</frameName>
-      <topicName>imu</topicName>
+      <frameName>$(arg rid)/imu_link</frameName>
+      <topicName>$(arg rid)/imu</topicName>
       <serviceName>imu_service</serviceName>
       <gaussianNoise>0.0</gaussianNoise>
       <updateRate>200</updateRate>
@@ -139,8 +140,8 @@
         </noise>
       </ray>
       <plugin name="gazebo_ros_yd_lidar_controller" filename="libgazebo_ros_gpu_laser.so">
-        <topicName>scan</topicName>
-        <frameName>base_scan</frameName>
+        <topicName>$(arg rid)/scan</topicName>
+        <frameName>$(arg rid)/base_scan</frameName>
       </plugin>
     </sensor>
   </gazebo>
